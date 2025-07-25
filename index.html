@@ -1,813 +1,759 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Contratos Energéticos - Colombia</title>
-  <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
-  <link href="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/@material/web@1.0.0/dist/material-components-web.min.css">
-  <script src="https://unpkg.com/@material/web@1.0.0/dist/material-components-web.min.js"></script>
-  <style>
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #333;
-      overflow-x: hidden;
-    }
-    .network-container {
-      background: #fff;
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      position: relative;
-      overflow: hidden;
-      min-height: 600px;
-      height: calc(100vh - 120px);
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: stretch;
-      align-items: stretch;
-    }
-    #mynetwork {
-      width: 100% !important;
-      height: 100% !important;
-      min-height: 500px;
-      flex: 1 1 auto;
-      border-radius: 12px;
-      border: 1px solid #e0e0e0;
-      background: #fff;
-      margin-bottom: 0;
-    }
-    .legend {
-      position: absolute;
-      bottom: 32px;
-      right: 32px;
-      background: #fff;
-      padding: 20px 22px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-      font-size: 13px;
-      max-width: 220px;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: flex-start;
-    }
-    .legend-title {
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: #333;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 0;
-      font-size: 0.98rem;
-    }
-    .legend-color {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      border: 1px solid #e0e0e0;
-    }
-    .legend-arrow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      color: #667eea;
-      font-size: 1.2rem;
-    }
-    .kpi-row .kpi-card {
-      background: linear-gradient(120deg, #f8fafc 60%, #e0e7ff 100%);
-      border-radius: 18px;
-      box-shadow: 0 4px 24px 0 rgba(80, 80, 180, 0.08);
-      padding: 28px 18px 18px 18px;
-      text-align: center;
-      position: relative;
-      transition: box-shadow 0.2s;
-      border: none;
-    }
-    .kpi-row .kpi-card:hover {
-      box-shadow: 0 8px 32px 0 rgba(80, 80, 180, 0.16);
-    }
-    .kpi-label {
-      font-size: 1rem;
-      color: #667eea;
-      font-weight: 600;
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-    }
-    .kpi-value {
-      font-size: 2.2rem;
-      font-weight: 800;
-      color: #22223b;
-      letter-spacing: 1px;
-    }
-    .filter-panel {
-      background: #f9fafb;
-      border-radius: 18px;
-      box-shadow: 0 2px 16px 0 rgba(80, 80, 180, 0.07);
-      border: none;
-    }
-    .filter-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #22223b;
-      margin-bottom: 18px;
-      letter-spacing: 0.5px;
-    }
-    .filter-select, .filter-input {
-      border-radius: 10px;
-      border: 1.5px solid #e0e7ff;
-      background: #fff;
-      font-size: 1.05rem;
-      transition: border-color 0.2s;
-    }
-    .filter-select:focus, .filter-input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 2px #e0e7ff;
-    }
-    .filter-btn {
-      font-weight: 600;
-      border-radius: 10px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px 0 rgba(80, 80, 180, 0.06);
-    }
-    .agent-details-card, .contract-details-card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 16px 0 rgba(80, 80, 180, 0.07);
-      border: none;
-      margin-bottom: 1rem;
-    }
-    .agent-header-modern {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-    .agent-title-modern {
-      font-size: 1.3rem;
-      font-weight: 700;
-      color: #22223b;
-      letter-spacing: 0.5px;
-    }
-    .agent-type {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #fff;
-      background: #667eea;
-      border-radius: 8px;
-      padding: 2px 10px;
-      margin-left: 8px;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px 18px;
-      margin-top: 10px;
-    }
-    .stat-item-label {
-      font-size: 0.95rem;
-      color: #667eea;
-      font-weight: 500;
-    }
-    .stat-item-value {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #22223b;
-    }
-    .stat-item-value.highlight {
-      color: #4ECDC4;
-    }
-    .contract-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .contract-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #22223b;
-    }
-    .contract-value {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: #FF6B6B;
-    }
-    .contract-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 18px;
-      margin-bottom: 10px;
-    }
-    .contract-label {
-      font-size: 0.95rem;
-      color: #667eea;
-      font-weight: 500;
-    }
-    .contract-data {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #22223b;
-    }
-    .performance-indicator {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 8px;
-    }
-    .performance-indicator .indicator-dot {
-      width: 10px;
-      height: 10px;
-      background: #4ECDC4;
-    }
-    .performance-indicator .indicator-text {
-      font-size: 0.95rem;
-      color: #4ECDC4;
-      font-weight: 600;
-    }
-    .table-modern {
-      background: #fff;
-      border-radius: 14px;
-      overflow: hidden;
-      box-shadow: 0 2px 16px 0 rgba(80, 80, 180, 0.07);
-      border: none;
-    }
-    .table-modern th {
-      background: #e0e7ff;
-      color: #22223b;
-      font-weight: 700;
-      font-size: 1rem;
-      border: none;
-    }
-    .table-modern td {
-      font-size: 1rem;
-      color: #22223b;
-      border: none;
-      vertical-align: middle;
-    }
-    .table-modern tr:not(:last-child) td {
-      border-bottom: 1px solid #f1f5f9;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Vida con Balones</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+            background: linear-gradient(to right, #ff6b6b, #4ecdc4, #FFD700, #FFFFFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            padding: 10px 0;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            margin-bottom: 15px;
+            max-width: 800px;
+        }
+        
+        .controls {
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 18px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        #playBtn {
+            background: linear-gradient(to right, #4CAF50, #2E8B57);
+        }
+        
+        #pauseBtn {
+            background: linear-gradient(to right, #2196F3, #1976D2);
+        }
+        
+        #resetBtn {
+            background: linear-gradient(to right, #f44336, #D32F2F);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 18px;
+            border-radius: 8px;
+        }
+        
+        .speed-control label {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .speed-control select {
+            padding: 9px;
+            font-size: 1rem;
+            border-radius: 6px;
+            border: 1px solid #4CAF50;
+            background: #2c2c2c;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 35px;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            width: 100%;
+        }
+        
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .color-indicator {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 12px currentColor;
+        }
+        
+        .special-ball {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        #gameCanvas {
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 0 35px rgba(255, 255, 255, 0.25);
+            margin-bottom: 25px;
+        }
+        
+        .game-over {
+            margin-top: 20px;
+            font-size: 2.2rem;
+            font-weight: bold;
+            text-align: center;
+            padding: 30px 50px;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 15px;
+            display: none;
+            border: 3px solid;
+            box-shadow: 0 0 35px currentColor;
+            max-width: 90%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .winner-red {
+            color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+        
+        .winner-blue {
+            color: #4ecdc4;
+            border-color: #4ecdc4;
+        }
+        
+        .winner-yellow {
+            color: #FFD700;
+            border-color: #FFD700;
+        }
+        
+        .winner-white {
+            color: #FFFFFF;
+            border-color: #FFFFFF;
+        }
+        
+        .instructions {
+            max-width: 900px;
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #ddd;
+            line-height: 1.6;
+        }
+        
+        .rules {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .rule {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            max-width: 250px;
+        }
+        
+        .rule h3 {
+            color: #FFD700;
+            margin-bottom: 8px;
+        }
+        
+        .highlight {
+            color: #FFD700;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 900px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            #gameCanvas {
+                width: 95%;
+                height: auto;
+            }
+            
+            .stats {
+                gap: 20px;
+                padding: 15px;
+            }
+            
+            .game-over {
+                font-size: 1.6rem;
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header class="mb-4">
-    <div class="container py-3">
-      <div class="d-flex align-items-center gap-3">
-        <span class="mdc-icon-button material-icons" style="font-size:2rem;color:#FF6B6B;background:linear-gradient(45deg,#FF6B6B,#4ECDC4);border-radius:12px;padding:10px;">bolt</span>
-        <div>
-          <h1 class="h4 mb-0">Sistema de Contratos Energéticos</h1>
-          <div class="text-muted small">Ministerio de Minas y Energía - República de Colombia</div>
-        </div>
-      </div>
-      <div class="row mt-3 g-2 kpi-row">
-        <div class="col">
-          <div class="kpi-card">
-            <div class="kpi-label">Contratos Activos</div>
-            <div class="kpi-value" id="total-contracts">8</div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="kpi-card">
-            <div class="kpi-label">kWh Totales</div>
-            <div class="kpi-value" id="total-energy">3,050</div>
-          </div>
-        </div>
-        <div class="col">
-          <div class="kpi-card">
-            <div class="kpi-label">PPP ($/kWh)</div>
-            <div class="kpi-value" id="ppp-price">$109</div>
-          </div>
-        </div>
-      </div>
+    <div class="header">
+        <h1>⚡ Juego de Vida con Balones en Colisión</h1>
+        <div class="subtitle">Rojo vs Azul vs Amarillo + ¡Bola Blanca Eliminadora!</div>
     </div>
-  </header>
-
-  <main class="container-fluid">
-    <div class="row g-4">
-      <aside class="col-md-4 col-lg-3">
-        <div class="mdc-card p-4 mb-4 filter-panel">
-          <h2 class="h6 mb-3 filter-title"><span class="material-icons legend-arrow" style="color:#667eea;">filter_alt</span> Filtros y Análisis</h2>
-          <form id="filters-form">
-            <div class="mb-3">
-              <label for="agent-filter" class="form-label">Filtrar por Agente</label>
-              <select class="form-select form-select-lg filter-select" id="agent-filter">
-                <option value="">Seleccionar agente...</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="type-filter" class="form-label">Filtrar por Tipo</label>
-              <select class="form-select form-select-lg filter-select" id="type-filter">
-                <option value="">Todos los tipos</option>
-                <option value="generador">Generadores</option>
-                <option value="distribuidor">Distribuidores</option>
-                <option value="comercializador">Comercializadores</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="degree-input" class="form-label">Grados de Separación</label>
-              <div class="input-group">
-                <input type="number" class="form-control form-control-lg filter-input" id="degree-input" min="1" max="5" value="1" placeholder="1">
-                <span class="input-group-text">grados</span>
-              </div>
-            </div>
-            <div class="d-flex gap-2 mb-2">
-              <button type="button" class="btn btn-primary btn-lg flex-fill filter-btn" id="apply-filters">
-                <span class="material-icons mdc-button__icon">search</span> Aplicar Filtros
-              </button>
-              <button type="button" class="btn btn-outline-secondary btn-lg flex-fill filter-btn" id="clear-filters">
-                <span class="material-icons mdc-button__icon">close</span> Limpiar
-              </button>
-            </div>
-          </form>
-          <div class="alert alert-info mt-3 p-2" id="current-filter" style="display:none;">
-            <div class="fw-bold">Filtro Activo</div>
-            <div id="current-filter-text"></div>
-          </div>
-          <div class="agent-details-card p-3 mt-3" id="agent-details">
-            <div class="agent-header-modern">
-              <div class="agent-title-modern">Selecciona un agente</div>
-            </div>
-            <div class="indicator-text">Haz clic en un nodo para ver estadísticas detalladas</div>
-          </div>
-          <div class="contract-details-card p-3 mt-3" id="contract-details" style="display:none;"></div>
-        </div>
-      </aside>
-      <section class="col-md-8 col-lg-9">
-        <div class="network-container position-relative">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="h6 mb-0"><span class="material-icons align-middle">account_tree</span> Red de Transacciones Energéticas</div>
-            <div class="btn-group">
-              <button class="btn btn-outline-primary" id="view-all">Ver Todo</button>
-              <button class="btn btn-outline-secondary" id="view-sellers">Vendedores</button>
-              <button class="btn btn-outline-secondary" id="view-buyers">Compradores</button>
-              <button class="btn btn-outline-danger" id="reset-view">Resetear</button>
-            </div>
-          </div>
-          <div id="mynetwork"></div>
-          <div class="legend">
-            <div class="legend-title"><span class="material-icons legend-arrow">info</span> Leyenda</div>
-            <div class="legend-item"><div class="legend-color" style="background: #FF6B6B;"></div> <span>Generadores</span></div>
-            <div class="legend-item"><div class="legend-color" style="background: #4ECDC4;"></div> <span>Distribuidores</span></div>
-            <div class="legend-item"><div class="legend-color" style="background: #45B7D1;"></div> <span>Comercializadores</span></div>
-            <div class="legend-item"><span class="material-icons legend-arrow">arrow_right_alt</span> <span>Flujo de Energía</span></div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </main>
-
-  <script>
-    const agents = [
-      { id: 1, sigla: "EMU", name: "Empresa de Mercados Unidos", type: "comercializador" },
-      { id: 2, sigla: "GENSA", name: "Generadora del Sagrado", type: "generador" },
-      { id: 3, sigla: "EPM", name: "Empresas Públicas de Medellín", type: "distribuidor" },
-      { id: 4, sigla: "ISAGEN", name: "ISAGEN S.A. E.S.P.", type: "generador" },
-      { id: 5, sigla: "CELSIA", name: "CELSIA Energía", type: "comercializador" },
-      { id: 6, sigla: "ENEL", name: "Enel Colombia S.A.", type: "distribuidor" }
-    ];
-
-    const transactions = [
-      { from: 2, to: 1, price: 120, energy: 300 },
-      { from: 4, to: 3, price: 95, energy: 500 },
-      { from: 4, to: 1, price: 110, energy: 450 },
-      { from: 1, to: 5, price: 130, energy: 250 },
-      { from: 6, to: 3, price: 105, energy: 600 },
-      { from: 3, to: 6, price: 100, energy: 200 },
-      { from: 6, to: 1, price: 98, energy: 350 },
-      { from: 1, to: 6, price: 115, energy: 400 }
-    ];
-
-    const typeColors = {
-      generador: "#FF6B6B",
-      distribuidor: "#4ECDC4",
-      comercializador: "#45B7D1"
-    };
-
-    let network = null; // Inicializar como null globalmente
-    let allNodes, allEdges;
-    let currentFilter = null;
-
-    // Calcular PPP (Precio Promedio Ponderado)
-    const calculatePPP = (transactionsList = transactions) => {
-      const totalEnergyValue = transactionsList.reduce((sum, tx) => sum + (tx.energy * tx.price), 0);
-      const totalEnergy = transactionsList.reduce((sum, tx) => sum + tx.energy, 0);
-      return totalEnergy > 0 ? totalEnergyValue / totalEnergy : 0;
-    };
-
-    // Calcular estadísticas generales
-    const calculateGeneralStats = () => {
-      const totalEnergy = transactions.reduce((sum, tx) => sum + tx.energy, 0);
-      const ppp = calculatePPP();
-      
-      document.getElementById('total-energy').textContent = totalEnergy.toLocaleString();
-      document.getElementById('ppp-price').textContent = '$' + ppp.toFixed(2);
-    };
-
-    // Calcular estadísticas por agente
-    const calculateAgentStats = (agentId) => {
-      const purchases = transactions.filter(tx => tx.to === agentId);
-      const sales = transactions.filter(tx => tx.from === agentId);
-      
-      const totalPurchases = purchases.reduce((sum, tx) => sum + tx.energy, 0);
-      const totalSales = sales.reduce((sum, tx) => sum + tx.energy, 0);
-      
-      const pppCompra = purchases.length > 0 ? calculatePPP(purchases) : 0;
-      const pppVenta = sales.length > 0 ? calculatePPP(sales) : 0;
-      
-      const avgPurchasePrice = purchases.length > 0 ? 
-        purchases.reduce((sum, tx) => sum + tx.price, 0) / purchases.length : 0;
-      const avgSalePrice = sales.length > 0 ? 
-        sales.reduce((sum, tx) => sum + tx.price, 0) / sales.length : 0;
-      
-      return {
-        totalPurchases,
-        totalSales,
-        totalTransactions: purchases.length + sales.length,
-        pppCompra,
-        pppVenta,
-        avgPurchasePrice,
-        avgSalePrice,
-        purchaseCount: purchases.length,
-        saleCount: sales.length,
-        volumeTotal: totalPurchases + totalSales
-      };
-    };
-
-    // Encontrar nodos por grados de separación
-    const findNodesByDegree = (centerNodeId, degree) => {
-      const visited = new Set();
-      const result = new Set();
-      
-      const queue = [{ id: centerNodeId, distance: 0 }];
-      visited.add(centerNodeId);
-      result.add(centerNodeId);
-      
-      while (queue.length > 0) {
-        const { id: currentId, distance } = queue.shift();
+    
+    <div class="controls">
+        <button id="playBtn"><span>▶️</span> Reproducir</button>
+        <button id="pauseBtn" disabled><span>⏸️</span> Pausar</button>
+        <button id="resetBtn"><span>🔄</span> Reiniciar</button>
         
-        if (distance < degree) {
-          const connectedNodes = transactions
-            .filter(tx => tx.from === currentId || tx.to === currentId)
-            .map(tx => tx.from === currentId ? tx.to : tx.from);
-          
-          for (const nodeId of connectedNodes) {
-            if (!visited.has(nodeId)) {
-              visited.add(nodeId);
-              result.add(nodeId);
-              queue.push({ id: nodeId, distance: distance + 1 });
-            }
-          }
-        }
-      }
-      
-      return Array.from(result);
-    };
-
-    // Crear nodos y aristas
-    const createNetworkData = () => {
-      const nodes = new vis.DataSet(
-        agents.map(agent => ({
-          id: agent.id,
-          label: agent.sigla,
-          title: `
-            <div style="padding: 10px; max-width: 300px;">
-              <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">${agent.name}</div>
-              <div style="font-size: 12px; color: #666; margin-bottom: 10px;">Tipo: ${agent.type.charAt(0).toUpperCase() + agent.type.slice(1)}</div>
-              <div style="font-size: 12px; color: #666;">Haz clic para ver estadísticas detalladas</div>
+        <div class="speed-control">
+            <label>Velocidad:</label>
+            <select id="speedSelect">
+                <option value="1">x1</option>
+                <option value="2">x2</option>
+                <option value="5">x5</option>
+                <option value="10" selected>x10</option>
+                <option value="20">x20</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="stats-container">
+        <div class="stats">
+            <div class="stat">
+                <div class="color-indicator" style="background: #ff6b6b; box-shadow: 0 0 15px #ff6b6b;"></div>
+                <span>Rojos: <span id="redCount">18</span></span>
             </div>
-          `,
-          color: {
-            background: typeColors[agent.type],
-            border: typeColors[agent.type],
-            highlight: {
-              background: typeColors[agent.type],
-              border: "#333"
-            }
-          },
-          shape: "box",
-          font: { 
-            size: 16, 
-            color: "white",
-            bold: true 
-          },
-          size: 25,
-          borderWidth: 2
-        }))
-      );
-
-      const edges = new vis.DataSet(
-        transactions.map((tx, index) => ({
-          id: index,
-          from: tx.from,
-          to: tx.to,
-          label: `$${tx.price}/MWh\n${tx.energy} kWh`,
-          title: `
-            <div style="padding: 10px; max-width: 300px;">
-              <div style="font-weight: bold; font-size: 16px; margin-bottom: 10px;">Contrato Energético</div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                <div>
-                  <div style="font-size: 12px; color: #666;">Vendedor:</div>
-                  <div style="font-weight: bold;">${agents.find(a => a.id === tx.from).sigla}</div>
-                </div>
-                <div>
-                  <div style="font-size: 12px; color: #666;">Comprador:</div>
-                  <div style="font-weight: bold;">${agents.find(a => a.id === tx.to).sigla}</div>
-                </div>
-                <div>
-                  <div style="font-size: 12px; color: #666;">Precio:</div>
-                  <div style="font-weight: bold; color: #4ECDC4;">$${tx.price}/MWh</div>
-                </div>
-                <div>
-                  <div style="font-size: 12px; color: #666;">Energía:</div>
-                  <div style="font-weight: bold; color: #FF6B6B;">${tx.energy} kWh</div>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: #666;">
-                Valor Total: <span style="font-weight: bold; color: #667eea;">$${(tx.price * tx.energy / 1000).toFixed(2)}</span>
-              </div>
+            <div class="stat">
+                <div class="color-indicator" style="background: #4ecdc4; box-shadow: 0 0 15px #4ecdc4;"></div>
+                <span>Azules: <span id="blueCount">18</span></span>
             </div>
-          `,
-          arrows: {
-            to: {
-              enabled: true,
-              scaleFactor: 1.2,
-              type: "arrow"
+            <div class="stat">
+                <div class="color-indicator" style="background: #FFD700; box-shadow: 0 0 15px #FFD700;"></div>
+                <span>Amarillos: <span id="yellowCount">18</span></span>
+            </div>
+            <div class="stat">
+                <span>⏱️ Tiempo: <span id="timeCount">0</span>s</span>
+            </div>
+        </div>
+        
+        <div class="special-ball">
+            <div class="color-indicator" style="background: #FFFFFF; box-shadow: 0 0 15px #FFFFFF, 0 0 25px #FFFFFF;"></div>
+            <span>Bola Blanca: ¡Elimina cualquier bola con la que colisiona!</span>
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas" width="850" height="600"></canvas>
+    
+    <div id="gameOverMsg" class="game-over">
+        <div id="winnerText"></div>
+        <div>¡Presiona Reiniciar para jugar de nuevo!</div>
+    </div>
+    
+    <div class="instructions">
+        <strong>¿Cómo funciona?</strong> Los balones cambian de color al colisionar. ¡Cuidado con la bola blanca que elimina cualquier bola que toque!
+        
+        <div class="rules">
+            <div class="rule">
+                <h3>Reglas de Colisión</h3>
+                <p>Balones normales: <span class="highlight">intercambian colores</span> al chocar</p>
+                <p>Bola blanca: <span class="highlight">elimina cualquier bola</span> que toque</p>
+            </div>
+            <div class="rule">
+                <h3>Objetivo</h3>
+                <p>El color que logre <span class="highlight">dominar el campo</span> gana</p>
+                <p>¡La bola blanca puede cambiar el resultado!</p>
+            </div>
+            <div class="rule">
+                <h3>Controles</h3>
+                <p>Velocidad: Controla la <span class="highlight">velocidad de simulación</span></p>
+                <p>Reiniciar: <span class="highlight">Comienza un nuevo juego</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Ball {
+            constructor(x, y, color, isWhite = false) {
+                this.x = x;
+                this.y = y;
+                this.radius = isWhite ? 12 : 8; // Bola blanca más grande
+                this.color = color;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.minSpeed = isWhite ? 1.5 : 1; // Bola blanca un poco más rápida
+                this.maxSpeed = isWhite ? 3.5 : 3; // Bola blanca un poco más rápida
+                this.isWhite = isWhite;
+                this.originalColor = color; // Guardar color original para efectos
             }
-          },
-          font: { 
-            align: "horizontal",
-            size: 12,
-            color: "#333",
-            strokeWidth: 2,
-            strokeColor: "white"
-          },
-          color: {
-            color: "#667eea",
-            highlight: "#FF6B6B",
-            hover: "#4ECDC4"
-          },
-          width: Math.max(2, Math.min(tx.energy / 100, 8)),
-          smooth: {
-            enabled: true,
-            type: "dynamic",
-            roundness: 0.5
-          }
-        }))
-      );
-
-      return { nodes, edges };
-    };
-
-    // --- NUEVAS FUNCIONES Y MEJORAS ---
-
-    // Actualizar el filtro de agentes
-    const updateAgentFilter = () => {
-      const agentFilter = document.getElementById('agent-filter');
-      agentFilter.innerHTML = '<option value="">Seleccionar agente...</option>' +
-        agents.map(agent => `<option value="${agent.id}">${agent.sigla} - ${agent.name}</option>`).join('');
-    };
-
-    // Aplicar filtros y actualizar la red
-    const applyFilters = () => {
-      if (!network) return; // Si la red no está lista, no hacer nada
-      const agentId = parseInt(document.getElementById('agent-filter').value);
-      const type = document.getElementById('type-filter').value;
-      const degree = parseInt(document.getElementById('degree-input').value) || 1;
-      let filteredAgents = agents;
-      let filteredTransactions = transactions;
-      let nodesToShow = agents.map(a => a.id);
-
-      // Filtrar por tipo
-      if (type) {
-        filteredAgents = filteredAgents.filter(a => a.type === type);
-        nodesToShow = filteredAgents.map(a => a.id);
-        filteredTransactions = filteredTransactions.filter(tx => nodesToShow.includes(tx.from) || nodesToShow.includes(tx.to));
-      }
-
-      // Filtrar por agente y grados de separación
-      if (!isNaN(agentId)) {
-        nodesToShow = findNodesByDegree(agentId, degree);
-        filteredAgents = agents.filter(a => nodesToShow.includes(a.id));
-        filteredTransactions = transactions.filter(tx => nodesToShow.includes(tx.from) && nodesToShow.includes(tx.to));
-      }
-
-      // Actualizar la red
-      updateNetwork(filteredAgents, filteredTransactions);
-      // Actualizar filtro actual
-      updateCurrentFilterDisplay(agentId, type, degree);
-      // Limpiar detalles de contrato al filtrar
-      const contractDetails = document.getElementById('contract-details');
-      if (contractDetails) contractDetails.style.display = 'none';
-    };
-
-    // Actualizar la red visual
-    const updateNetwork = (filteredAgents, filteredTransactions) => {
-      if (!network) return; // Si la red no está lista, no hacer nada
-      const nodes = new vis.DataSet(
-        filteredAgents.map(agent => ({
-          id: agent.id,
-          label: agent.sigla,
-          title: `<div style=\"padding: 10px; max-width: 300px;\"><div style=\"font-weight: bold; font-size: 16px; margin-bottom: 8px;\">${agent.name}</div><div style=\"font-size: 12px; color: #666; margin-bottom: 10px;\">Tipo: ${agent.type.charAt(0).toUpperCase() + agent.type.slice(1)}</div><div style=\"font-size: 12px; color: #666;\">Haz clic para ver estadísticas detalladas</div></div>`,
-          color: {
-            background: typeColors[agent.type],
-            border: typeColors[agent.type],
-            highlight: { background: typeColors[agent.type], border: "#333" }
-          },
-          shape: "box",
-          font: { size: 16, color: "white", bold: true },
-          size: 25,
-          borderWidth: 2
-        }))
-      );
-      const edges = new vis.DataSet(
-        filteredTransactions.map((tx, index) => ({
-          id: index,
-          from: tx.from,
-          to: tx.to,
-          label: `$${tx.price}/MWh\n${tx.energy} kWh`,
-          title: `<div style=\"padding: 10px; max-width: 300px;\"><div style=\"font-weight: bold; font-size: 16px; margin-bottom: 10px;\">Contrato Energético</div><div style=\"display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;\"><div><div style=\"font-size: 12px; color: #666;\">Vendedor:</div><div style=\"font-weight: bold;\">${agents.find(a => a.id === tx.from).sigla}</div></div><div><div style=\"font-size: 12px; color: #666;\">Comprador:</div><div style=\"font-weight: bold;\">${agents.find(a => a.id === tx.to).sigla}</div></div><div><div style=\"font-size: 12px; color: #666;\">Precio:</div><div style=\"font-weight: bold; color: #4ECDC4;\">$${tx.price}/MWh</div></div><div><div style=\"font-size: 12px; color: #666;\">Energía:</div><div style=\"font-weight: bold; color: #FF6B6B;\">${tx.energy} kWh</div></div></div><div style=\"font-size: 12px; color: #666;\">Valor Total: <span style=\"font-weight: bold; color: #667eea;\">$${(tx.price * tx.energy / 1000).toFixed(2)}</span></div></div>`,
-          arrows: { to: { enabled: true, scaleFactor: 1.2, type: "arrow" } },
-          font: { align: "horizontal", size: 12, color: "#333", strokeWidth: 2, strokeColor: "white" },
-          color: { color: "#667eea", highlight: "#FF6B6B", hover: "#4ECDC4" },
-          width: Math.max(2, Math.min(tx.energy / 100, 8)),
-          smooth: { enabled: true, type: "dynamic", roundness: 0.5 }
-        }))
-      );
-      network.setData({ nodes, edges });
-    };
-
-    // Mostrar el filtro actual
-    const updateCurrentFilterDisplay = (agentId, type, degree) => {
-      const filterDiv = document.getElementById('current-filter');
-      const filterText = document.getElementById('current-filter-text');
-      let text = '';
-      if (!isNaN(agentId)) {
-        const agent = agents.find(a => a.id === agentId);
-        text += `<b>Agente:</b> ${agent.sigla} (${agent.name})<br>`;
-        text += `<b>Grados de separación:</b> ${degree}<br>`;
-      }
-      if (type) {
-        text += `<b>Tipo:</b> ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-      }
-      if (text) {
-        filterDiv.style.display = '';
-        filterText.innerHTML = text;
-      } else {
-        filterDiv.style.display = 'none';
-      }
-    };
-
-    // Limpiar filtros
-    const clearFilters = () => {
-      document.getElementById('agent-filter').value = '';
-      document.getElementById('type-filter').value = '';
-      document.getElementById('degree-input').value = 1;
-      updateNetwork(agents, transactions);
-      updateCurrentFilterDisplay(NaN, '', 1);
-    };
-
-    // --- EVENTOS Y LOGICA DE INICIALIZACION ---
-    document.addEventListener('DOMContentLoaded', () => {
-      updateAgentFilter();
-      calculateGeneralStats();
-      updateCurrentFilterDisplay(NaN, '', 1);
-
-      // Inicializar la red SOLO UNA VEZ
-      const container = document.getElementById('mynetwork');
-      const data = createNetworkData();
-      network = new vis.Network(container, data, {
-        nodes: { borderWidth: 2 },
-        edges: { arrows: 'to', smooth: true },
-        physics: { stabilization: true }
-      });
-      updateNetwork(agents, transactions); // Asegura que la red esté lista
-
-      // Evento: click en nodo (agente)
-      network.on('click', function (params) {
-        if (params.nodes.length > 0) {
-          const agentId = params.nodes[0];
-          showAgentStats(agentId);
-        } else if (params.edges.length > 0) {
-          const edgeId = params.edges[0];
-          showContractDetails(edgeId);
+            
+            update(canvas) {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Colisión con paredes (con efecto de rebote más pronunciado)
+                if (this.x - this.radius <= 0 || this.x + this.radius >= canvas.width) {
+                    this.vx = -this.vx * (this.isWhite ? 1.05 : 1.02); // La bola blanca rebota más fuerte
+                    this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                    
+                    // Efecto visual al chocar con pared
+                    if (this.isWhite) {
+                        this.color = '#FFFFFF';
+                    }
+                }
+                
+                if (this.y - this.radius <= 0 || this.y + this.radius >= canvas.height) {
+                    this.vy = -this.vy * (this.isWhite ? 1.05 : 1.02); // La bola blanca rebota más fuerte
+                    this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+                    
+                    // Efecto visual al chocar con pared
+                    if (this.isWhite) {
+                        this.color = '#FFFFFF';
+                    }
+                }
+                
+                // Mantener velocidad dentro de límites
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed < this.minSpeed) {
+                    this.vx = (this.vx / speed) * this.minSpeed;
+                    this.vy = (this.vy / speed) * this.minSpeed;
+                } else if (speed > this.maxSpeed) {
+                    this.vx = (this.vx / speed) * this.maxSpeed;
+                    this.vy = (this.vy / speed) * this.maxSpeed;
+                }
+            }
+            
+            draw(ctx) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // Borde con brillo especial para la bola blanca
+                if (this.isWhite) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.lineWidth = 2.5;
+                    
+                    // Efecto de aura para la bola blanca
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                } else {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.lineWidth = 1.5;
+                }
+                ctx.stroke();
+                
+                // Efecto de brillo
+                ctx.beginPath();
+                ctx.arc(this.x - this.radius * 0.3, this.y - this.radius * 0.3, this.radius * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = this.isWhite ? 'rgba(255, 255, 255, 0.7)' : 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+                
+                // Pequeño punto central
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = this.isWhite ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.8)';
+                ctx.fill();
+            }
+            
+            checkCollision(other) {
+                const dx = this.x - other.x;
+                const dy = this.y - other.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                return distance < (this.radius + other.radius);
+            }
+            
+            resolveCollision(other) {
+                const dx = other.x - this.x;
+                const dy = other.y - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < this.radius + other.radius) {
+                    // Separar balones
+                    const overlap = this.radius + other.radius - distance;
+                    const separationX = (dx / distance) * (overlap / 2);
+                    const separationY = (dy / distance) * (overlap / 2);
+                    
+                    this.x -= separationX;
+                    this.y -= separationY;
+                    other.x += separationX;
+                    other.y += separationY;
+                    
+                    // Colisión elástica
+                    const normalX = dx / distance;
+                    const normalY = dy / distance;
+                    
+                    const relativeVelX = other.vx - this.vx;
+                    const relativeVelY = other.vy - this.vy;
+                    
+                    const speed = relativeVelX * normalX + relativeVelY * normalY;
+                    
+                    if (speed < 0) return false;
+                    
+                    this.vx += speed * normalX;
+                    this.vy += speed * normalY;
+                    other.vx -= speed * normalX;
+                    other.vy -= speed * normalY;
+                    
+                    return true;
+                }
+                return false;
+            }
         }
-      });
-
-      // Evento: click en aplicar filtros
-      document.getElementById('apply-filters').addEventListener('click', applyFilters);
-      document.getElementById('clear-filters').addEventListener('click', clearFilters);
-      document.getElementById('reset-view').addEventListener('click', clearFilters);
-      document.getElementById('view-all').addEventListener('click', clearFilters);
-      // Opcional: botones de vendedores/compradores pueden tener lógica adicional
-    });
-
-    // --- MEJORAR ESTADISTICAS DE AGENTE ---
-    // Mostrar estadísticas del agente
-    const showAgentStats = (agentId) => {
-      const agent = agents.find(a => a.id === agentId);
-      const stats = calculateAgentStats(agentId);
-      const agentDetails = document.getElementById('agent-details');
-      agentDetails.classList.add('show');
-      agentDetails.innerHTML = `
-        <div class="agent-header">
-          <div class="agent-title">${agent.sigla}</div>
-          <div class="agent-type" style="background: ${typeColors[agent.type]};">
-            ${agent.type.charAt(0).toUpperCase() + agent.type.slice(1)}
-          </div>
-        </div>
-        <div class="indicator-text" style="margin-bottom: 15px; font-size: 13px;">${agent.name}</div>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-item-label">Energía Comprada</div>
-            <div class="stat-item-value highlight">${stats.totalPurchases.toLocaleString()} kWh</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label">Energía Vendida</div>
-            <div class="stat-item-value highlight">${stats.totalSales.toLocaleString()} kWh</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label">PPP Compra</div>
-            <div class="stat-item-value">$${stats.pppCompra.toFixed(2)}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label">PPP Venta</div>
-            <div class="stat-item-value">$${stats.pppVenta.toFixed(2)}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label">Precio Prom. Compra</div>
-            <div class="stat-item-value">$${stats.avgPurchasePrice.toFixed(2)}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label">Precio Prom. Venta</div>
-            <div class="stat-item-value">$${stats.avgSalePrice.toFixed(2)}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label"># Compras</div>
-            <div class="stat-item-value">${stats.purchaseCount}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label"># Ventas</div>
-            <div class="stat-item-value">${stats.saleCount}</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-item-label">Volumen Total</div>
-            <div class="stat-item-value">${stats.volumeTotal.toLocaleString()} kWh</div>
-          </div>
-        </div>
-      `;
-    };
-
-    // Mostrar detalles del contrato
-    const showContractDetails = (edgeId) => {
-      const tx = transactions[edgeId];
-      if (!tx) return;
-      const contractDetails = document.getElementById('contract-details');
-      contractDetails.style.display = '';
-      contractDetails.innerHTML = `
-        <div class="contract-header">
-          <div class="contract-title">Detalle del Contrato</div>
-          <div class="contract-value" id="contract-value">$${(tx.price * tx.energy / 1000).toFixed(2)}</div>
-        </div>
-        <div class="contract-grid">
-          <div class="contract-item">
-            <div class="contract-label">Vendedor</div>
-            <div class="contract-data" id="contract-seller">${agents.find(a => a.id === tx.from).sigla}</div>
-          </div>
-          <div class="contract-item">
-            <div class="contract-label">Comprador</div>
-            <div class="contract-data" id="contract-buyer">${agents.find(a => a.id === tx.to).sigla}</div>
-          </div>
-          <div class="contract-item">
-            <div class="contract-label">Precio</div>
-            <div class="contract-data" id="contract-price">$${tx.price}/MWh</div>
-          </div>
-          <div class="contract-item">
-            <div class="contract-label">Energía</div>
-            <div class="contract-data" id="contract-energy">${tx.energy} kWh</div>
-          </div>
-        </div>
-        <div class="performance-indicator">
-          <div class="indicator-dot"></div>
-          <div class="indicator-text">Contrato en estado activo</div>
-        </div>
-      `;
-    };
-  </script>
+        
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.balls = [];
+                this.isRunning = false;
+                this.speed = 10;
+                this.startTime = 0;
+                this.gameOver = false;
+                this.whiteBall = null;
+                
+                this.initializeBalls();
+                this.setupEventListeners();
+                this.draw();
+            }
+            
+            initializeBalls() {
+                this.balls = [];
+                this.startTime = Date.now();
+                this.gameOver = false;
+                document.getElementById('gameOverMsg').style.display = 'none';
+                
+                // Crear balones (18 rojos, 18 azules, 18 amarillos)
+                const colors = ['#ff6b6b', '#4ecdc4', '#FFD700'];
+                const ballCount = 18; // Por color
+                const totalBalls = ballCount * 3;
+                
+                for (let colorIdx = 0; colorIdx < colors.length; colorIdx++) {
+                    for (let i = 0; i < ballCount; i++) {
+                        let x, y, validPosition;
+                        let attempts = 0;
+                        
+                        do {
+                            x = Math.random() * (this.canvas.width - 40) + 20;
+                            y = Math.random() * (this.canvas.height - 40) + 20;
+                            validPosition = true;
+                            
+                            for (let ball of this.balls) {
+                                const dx = x - ball.x;
+                                const dy = y - ball.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                if (distance < 25) {
+                                    validPosition = false;
+                                    break;
+                                }
+                            }
+                            attempts++;
+                        } while (!validPosition && attempts < 100);
+                        
+                        this.balls.push(new Ball(x, y, colors[colorIdx]));
+                    }
+                }
+                
+                // Crear bola blanca (solo una)
+                let validPosition = false;
+                let x, y;
+                let attempts = 0;
+                
+                while (!validPosition && attempts < 200) {
+                    x = Math.random() * (this.canvas.width - 40) + 20;
+                    y = Math.random() * (this.canvas.height - 40) + 20;
+                    validPosition = true;
+                    
+                    for (let ball of this.balls) {
+                        const dx = x - ball.x;
+                        const dy = y - ball.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < 40) { // Más espacio para la bola blanca
+                            validPosition = false;
+                            break;
+                        }
+                    }
+                    attempts++;
+                }
+                
+                this.whiteBall = new Ball(x, y, '#FFFFFF', true);
+                this.balls.push(this.whiteBall);
+            }
+            
+            setupEventListeners() {
+                document.getElementById('playBtn').addEventListener('click', () => this.play());
+                document.getElementById('pauseBtn').addEventListener('click', () => this.pause());
+                document.getElementById('resetBtn').addEventListener('click', () => this.reset());
+                document.getElementById('speedSelect').addEventListener('change', (e) => {
+                    this.speed = parseInt(e.target.value);
+                });
+            }
+            
+            play() {
+                if (this.gameOver) return;
+                
+                this.isRunning = true;
+                document.getElementById('playBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = false;
+                this.gameLoop();
+            }
+            
+            pause() {
+                this.isRunning = false;
+                document.getElementById('playBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = true;
+            }
+            
+            reset() {
+                this.pause();
+                this.initializeBalls();
+                this.draw();
+                this.updateStats();
+            }
+            
+            update() {
+                if (this.gameOver) return;
+                
+                for (let i = 0; i < this.speed; i++) {
+                    // Actualizar posiciones
+                    for (let ball of this.balls) {
+                        ball.update(this.canvas);
+                    }
+                    
+                    // Verificar colisiones
+                    const ballsToRemove = [];
+                    
+                    for (let i = 0; i < this.balls.length; i++) {
+                        for (let j = i + 1; j < this.balls.length; j++) {
+                            const ball1 = this.balls[i];
+                            const ball2 = this.balls[j];
+                            
+                            if (ball1.checkCollision(ball2)) {
+                                // Si una de las bolas es blanca
+                                if (ball1.isWhite || ball2.isWhite) {
+                                    // La bola blanca elimina a la otra bola
+                                    if (ball1.isWhite && !ball2.isWhite) {
+                                        ballsToRemove.push(ball2);
+                                        // Aumentar velocidad de la bola blanca al eliminar
+                                        ball1.vx *= 1.05;
+                                        ball1.vy *= 1.05;
+                                    } else if (ball2.isWhite && !ball1.isWhite) {
+                                        ballsToRemove.push(ball1);
+                                        // Aumentar velocidad de la bola blanca al eliminar
+                                        ball2.vx *= 1.05;
+                                        ball2.vy *= 1.05;
+                                    }
+                                } else {
+                                    // Colisión normal entre bolas de colores
+                                    ball1.resolveCollision(ball2);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Eliminar bolas marcadas para remover
+                    this.balls = this.balls.filter(ball => !ballsToRemove.includes(ball));
+                    
+                    // Verificar condición de victoria
+                    this.checkWinCondition();
+                }
+            }
+            
+            checkWinCondition() {
+                const totalBalls = this.balls.length;
+                const redBalls = this.balls.filter(ball => ball.color === '#ff6b6b' && !ball.isWhite).length;
+                const blueBalls = this.balls.filter(ball => ball.color === '#4ecdc4' && !ball.isWhite).length;
+                const yellowBalls = this.balls.filter(ball => ball.color === '#FFD700' && !ball.isWhite).length;
+                const whiteBalls = this.balls.filter(ball => ball.isWhite).length;
+                
+                const nonWhiteBalls = redBalls + blueBalls + yellowBalls;
+                
+                // Si solo quedan bolas blancas (o ninguna bola)
+                if (nonWhiteBalls === 0 && whiteBalls > 0) {
+                    this.gameOver = true;
+                    this.pause();
+                    
+                    const winnerText = document.getElementById('winnerText');
+                    const gameOverMsg = document.getElementById('gameOverMsg');
+                    
+                    winnerText.textContent = '🏆 ¡La bola blanca ha ganado!';
+                    winnerText.className = 'winner-white';
+                    gameOverMsg.style.display = 'block';
+                }
+                // Si solo queda un color (los otros dos son cero)
+                else if ((redBalls > 0 && blueBalls === 0 && yellowBalls === 0) ||
+                         (blueBalls > 0 && redBalls === 0 && yellowBalls === 0) ||
+                         (yellowBalls > 0 && redBalls === 0 && blueBalls === 0)) {
+                    
+                    this.gameOver = true;
+                    this.pause();
+                    
+                    const winnerText = document.getElementById('winnerText');
+                    const gameOverMsg = document.getElementById('gameOverMsg');
+                    
+                    if (redBalls > 0) {
+                        winnerText.textContent = '🏆 ¡Los rojos han ganado!';
+                        winnerText.className = 'winner-red';
+                    } else if (blueBalls > 0) {
+                        winnerText.textContent = '🏆 ¡Los azules han ganado!';
+                        winnerText.className = 'winner-blue';
+                    } else if (yellowBalls > 0) {
+                        winnerText.textContent = '🏆 ¡Los amarillos han ganado!';
+                        winnerText.className = 'winner-yellow';
+                    }
+                    
+                    gameOverMsg.style.display = 'block';
+                }
+            }
+            
+            draw() {
+                // Fondo con efecto de espacio
+                this.ctx.fillStyle = '#000';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Estrellas de fondo
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                for (let i = 0; i < 100; i++) {
+                    const x = (i * 37) % this.canvas.width;
+                    const y = (i * 57) % this.canvas.height;
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 1, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Dibujar balones
+                for (let ball of this.balls) {
+                    ball.draw(this.ctx);
+                }
+                
+                this.updateStats();
+            }
+            
+            updateStats() {
+                const redCount = this.balls.filter(ball => ball.color === '#ff6b6b' && !ball.isWhite).length;
+                const blueCount = this.balls.filter(ball => ball.color === '#4ecdc4' && !ball.isWhite).length;
+                const yellowCount = this.balls.filter(ball => ball.color === '#FFD700' && !ball.isWhite).length;
+                const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                
+                document.getElementById('redCount').textContent = redCount;
+                document.getElementById('blueCount').textContent = blueCount;
+                document.getElementById('yellowCount').textContent = yellowCount;
+                document.getElementById('timeCount').textContent = elapsed;
+            }
+            
+            gameLoop() {
+                if (!this.isRunning) return;
+                
+                this.update();
+                this.draw();
+                
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // Inicializar el juego
+        const game = new Game();
+    </script>
 </body>
 </html>
